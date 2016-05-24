@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration monitorInterval="60">
+<properties>
+    <property name="pattern">%d{yyyy-MM-dd HH:mm:ss.SSS} %c{1.} [%p] %msg%n</property>
+    <property name="patternNoTime">%msg%n</property>
+</properties>
+<appenders>
+    <RollingFile name="A1"
+                 fileName="${sys:storm.log.dir}/${sys:logfile.name}"
+                 filePattern="${sys:storm.log.dir}/${sys:logfile.name}.%i.gz">
+        <PatternLayout>
+            <pattern>${pattern}</pattern>
+        </PatternLayout>
+        <Policies>
+            <SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
+        </Policies>
+        <DefaultRolloverStrategy max="9"/>
+    </RollingFile>
+    <Socket name="logstash" host="10.10.20.10" port="1337"></Socket>
+</appenders>
+<loggers>
+    <root level="INFO">
+        <appender-ref ref="A1"/>
+        <appender-ref ref="logstash"/>
+    </root>
+</loggers>
+</configuration>

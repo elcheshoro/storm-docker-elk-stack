@@ -1,0 +1,81 @@
+version: '2'
+services:
+    zookeeper:
+        container_name: zookeeper
+        image: jplock/zookeeper
+        ports:
+            - "2181:2181"
+
+    storm-nimbus:
+        container_name: storm-nimbus
+        image: fhuz/docker-storm
+        ports:
+            - "6627:6627"
+            - "3772:3772"
+            - "3773:3773"
+        environment:
+            - CONFIG_NIMBUS_HOST=10.10.20.10
+            - NIMBUS_PORT_6627_TCP_ADDR=10.10.20.10
+            - ZK_PORT_2181_TCP="tcp://10.10.20.10:2181"
+            - ZK_PORT_2181_TCP_ADDR=10.10.20.10
+        links:
+            - zookeeper:zk
+        command: --daemon nimbus drpc
+
+    storm-ui:
+        container_name: storm-ui
+        image: fhuz/docker-storm
+        ports:
+            - "8080:8080"
+        environment:
+            - CONFIG_NIMBUS_HOST=10.10.20.10
+            - NIMBUS_PORT_6627_TCP_ADDR=10.10.20.10
+            - ZK_PORT_2181_TCP="tcp://10.10.20.10:2181"
+            - ZK_PORT_2181_TCP_ADDR=10.10.20.10
+        links:
+            - zookeeper:zk
+            - storm-nimbus:nimbus
+        command: --daemon ui
+
+    storm-supervisor:
+        container_name: storm-supervisor
+        image: fhuz/docker-storm
+        ports:
+            - "6700:6700"
+            - "6701:6701"
+            - "6702:6702"
+            - "6703:6703"
+        volumes:
+            - /vagrant/config/storm:/usr/share/apache-storm/log4j2
+        environment:
+            - CONFIG_NIMBUS_HOST=10.10.20.10
+            - NIMBUS_PORT_6627_TCP_ADDR=10.10.20.10
+            - ZK_PORT_2181_TCP="tcp://10.10.20.10:2181"
+            - ZK_PORT_2181_TCP_ADDR=10.10.20.10
+        command: --daemon supervisor
+
+
+    elasticsearch:
+        container_name: elasticsearch
+        image: elasticsearch:2.2.0
+        ports:
+            - "9200:9200"
+
+    logstash:
+        container_name: logstash
+        image: logstash:2.2.2
+        volumes:
+            - /vagrant/config/logstash:/config
+        ports:
+            - "1337:1337"
+        command: logstash -v -f /config/logstash.config -l /config/log.txt
+
+    kibana:
+        container_name: kibana
+        image: kibana:4.4.1
+        ports:
+            - "5601:5601"
+        environment:
+            - ELASTICSEARCH_URL=http://10.10.20.10:9200
+        links:
+            - elasticsearch
