@@ -54,7 +54,6 @@ services:
             - ZK_PORT_2181_TCP_ADDR=10.10.20.10
         command: --daemon supervisor
 
-
     elasticsearch:
         container_name: elasticsearch
         image: elasticsearch:2.2.0

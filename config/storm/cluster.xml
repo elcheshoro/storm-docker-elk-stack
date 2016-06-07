@@ -16,12 +16,10 @@
         </Policies>
         <DefaultRolloverStrategy max="9"/>
     </RollingFile>
-    <Socket name="logstash" host="10.10.20.10" port="1337"></Socket>
 </appenders>
 <loggers>
     <root level="INFO">
         <appender-ref ref="A1"/>
-        <appender-ref ref="logstash"/>
     </root>
 </loggers>
 </configuration>
